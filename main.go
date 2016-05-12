@@ -48,12 +48,12 @@ func createPIDFile(filename string) error {
 var (
 	defaultPort = 18889
 	defaultHost = "127.0.0.1"
-	file        = kingpin.Flag("config", "config file").Short('c').Required().String()
-	port        = kingpin.Flag("port", "port").Short('p').Default(fmt.Sprint(defaultPort)).Int()
-	host        = kingpin.Flag("host", "host").Default(defaultHost).String()
-	logfile     = kingpin.Flag("logfile", "log file").Short('l').String()
-	pidfile     = kingpin.Flag("pidfile", "pid file").String()
-	daemon      = kingpin.Flag("daemon", "daemon").Short('d').Bool()
+	file        = kingpin.Flag("config", "config file location").Short('c').Required().String()
+	port        = kingpin.Flag("port", "listen port").Short('p').Default(fmt.Sprint(defaultPort)).Int()
+	host        = kingpin.Flag("host", "list host").Default(defaultHost).String()
+	logfile     = kingpin.Flag("logfile", "log file location").Short('l').String()
+	pidfile     = kingpin.Flag("pidfile", "pid file location").String()
+	daemon      = kingpin.Flag("daemon", "enable daemon mode").Short('d').Bool()
 	log         = logrus.New()
 )
 
