@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/Konboi/ghooks"
 	"github.com/Sirupsen/logrus"
-	"github.com/VividCortex/godaemon"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"io/ioutil"
 	"os"
@@ -53,21 +52,19 @@ var (
 	host        = kingpin.Flag("host", "listen host").Default(defaultHost).String()
 	logfile     = kingpin.Flag("logfile", "log file location").Short('l').String()
 	pidfile     = kingpin.Flag("pidfile", "pid file location").String()
-	daemon      = kingpin.Flag("daemon", "enable daemon mode").Short('d').Bool()
 	log         = logrus.New()
 )
 
 func main() {
 	kingpin.CommandLine.Help = "Receives Github webhooks and runs commands"
-	kingpin.Version("0.1.0")
+	kingpin.Version("0.1.1")
 	kingpin.Parse()
 
 	tmpConf := config{
-		Port:      *port,
-		Host:      *host,
-		Logfile:   *logfile,
-		Daemonize: *daemon,
-		Pidfile:   *pidfile,
+		Port:    *port,
+		Host:    *host,
+		Logfile: *logfile,
+		Pidfile: *pidfile,
 	}
 
 	conf, err := loadToml(*file, tmpConf)
@@ -98,10 +95,6 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-	}
-
-	if conf.Daemonize {
-		godaemon.MakeDaemon(&godaemon.DaemonAttr{})
 	}
 
 	for _, h := range conf.Hook {

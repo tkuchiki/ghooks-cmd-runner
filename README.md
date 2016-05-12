@@ -22,7 +22,6 @@ Flags:
       --host="127.0.0.1"  listen host
   -l, --logfile=LOGFILE   log file location
       --pidfile=PIDFILE   pid file location
-  -d, --daemon            enable daemon mode
       --version           Show application version.
 ```
 
@@ -32,7 +31,6 @@ Flags:
 # port = 18889 (default: 18889)
 # host = "0.0.0.0 (default: 127.0.0.1)"
 # secret = "your webhook secret"
-# daemonize = true (default: false)
 # logfile = "path to logfile (default: stdout)"
 # pidfile = "path to pidfile"
 
@@ -55,12 +53,6 @@ echo ${GITHUB_WEBHOOK_PAYLOAD} | base64 -d | jq .
 ## Examples
 
 ```shell
-$ ./ghooks-cmd-runner -c /path/to/config
+$ ./ghooks-cmd-runner -c /path/to/config --pidfile /path/to/pid -l /path/to/logfile
 ghooks server start 127.0.0.1:18889
-```
-
-### Daemonize
-
-```shell
-$ ./ghooks-cmd-runner -c /path/to/config -l /path/to/logfile --pidfile /path/to/pidfile -d
 ```

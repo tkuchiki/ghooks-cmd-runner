@@ -1,4 +1,5 @@
 *.pid
 src/
 pkg/
+tmp/
 ghooks-cmd-runner

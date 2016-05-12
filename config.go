@@ -6,13 +6,12 @@ import (
 )
 
 type config struct {
-	Port      int    `toml:"port"`
-	Host      string `toml:"host"`
-	Secret    string `toml:"secret"`
-	Logfile   string `toml:"logfile"`
-	Pidfile   string `toml:"pidfile"`
-	Daemonize bool   `toml:"daemonize"`
-	Hook      []hook
+	Port    int    `toml:"port"`
+	Host    string `toml:"host"`
+	Secret  string `toml:"secret"`
+	Logfile string `toml:"logfile"`
+	Pidfile string `toml:"pidfile"`
+	Hook    []hook
 }
 
 type hook struct {
@@ -49,10 +48,6 @@ func loadToml(filename string, c config) (config, error) {
 
 	if config.Host == "" {
 		config.Host = c.Host
-	}
-
-	if !config.Daemonize {
-		config.Daemonize = c.Daemonize
 	}
 
 	if config.Logfile == "" {
