@@ -1,0 +1,14 @@
+# port = 18889 (default: 18889)
+# host = "0.0.0.0 (default: 127.0.0.1)"
+# secret = "your webhook secret"
+# daemonize = true (default: false)
+# logfile = "path to logfile (default: stdout)" 
+# pidfile = "path to pidfile"
+
+[[hook]]
+event = "push"
+command = "/path/to/sh"
+
+[[hook]]
+event = "pull_request"
+command = "/path/to/sh"

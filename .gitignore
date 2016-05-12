@@ -1,0 +1,4 @@
+*.pid
+src/
+pkg/
+ghooks-cmd-runner
