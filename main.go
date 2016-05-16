@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -26,7 +27,7 @@ func runCmd(command, payload string) error {
 	}
 
 	if len(out) > 0 {
-		log.Println(string(out))
+		outputLines(out)
 	}
 
 	if err != nil {
@@ -34,6 +35,14 @@ func runCmd(command, payload string) error {
 	}
 
 	return err
+}
+
+func outputLines(data []byte) {
+	scanner := bufio.NewScanner(strings.NewReader(string(data)))
+
+	for scanner.Scan() {
+		log.Println(scanner.Text())
+	}
 }
 
 func openFile(filename string) (*os.File, error) {
@@ -57,7 +66,7 @@ var (
 
 func main() {
 	kingpin.CommandLine.Help = "Receives Github webhooks and runs commands"
-	kingpin.Version("0.1.1")
+	kingpin.Version("0.1.2")
 	kingpin.Parse()
 
 	tmpConf := config{
