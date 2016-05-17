@@ -37,6 +37,7 @@ Flags:
 [[hook]]
 event = "push"
 command = "/path/to/script"
+branch = "feature/*"
 
 [[hook]]
 event = "pull_request"
