@@ -1,57 +1,14 @@
 package main
 
 import (
-	"bufio"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/Konboi/ghooks"
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/alecthomas/kingpin.v2"
-	"io/ioutil"
 	"os"
-	"os/exec"
-	"strings"
 )
-
-func runCmd(command, payload string) error {
-	var out []byte
-	var err error
-
-	os.Setenv("GITHUB_WEBHOOK_PAYLOAD", payload)
-	cmds := strings.Fields(command)
-	if len(cmds) > 1 {
-		out, err = exec.Command(cmds[0], cmds[1:]...).CombinedOutput()
-	} else {
-		out, err = exec.Command(cmds[0]).CombinedOutput()
-	}
-
-	if len(out) > 0 {
-		outputLines(out)
-	}
-
-	if err != nil {
-		log.Println(err)
-	}
-
-	return err
-}
-
-func outputLines(data []byte) {
-	scanner := bufio.NewScanner(strings.NewReader(string(data)))
-
-	for scanner.Scan() {
-		log.Println(scanner.Text())
-	}
-}
-
-func openFile(filename string) (*os.File, error) {
-	return os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-}
-
-func createPIDFile(filename string) error {
-	return ioutil.WriteFile(filename, []byte(fmt.Sprint(os.Getpid())), 0644)
-}
 
 var (
 	defaultPort = 18889
@@ -66,7 +23,7 @@ var (
 
 func main() {
 	kingpin.CommandLine.Help = "Receives Github webhooks and runs commands"
-	kingpin.Version("0.1.2")
+	kingpin.Version("0.1.3")
 	kingpin.Parse()
 
 	tmpConf := config{
@@ -108,16 +65,25 @@ func main() {
 
 	for _, h := range conf.Hook {
 		hooks.On(h.Event, func(payload interface{}) {
-			var buf []byte
-			buf, err = json.Marshal(payload)
+			branch := parseBranch(payload)
+			var matched bool
+			matched, err = matchBranch(branch, h.Branch)
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			encPayload := base64.StdEncoding.EncodeToString(buf)
-			err = runCmd(h.Cmd, encPayload)
-			if err != nil {
-				log.Fatal(err)
+			if matched {
+				var buf []byte
+				buf, err = json.Marshal(payload)
+				if err != nil {
+					log.Fatal(err)
+				}
+
+				encPayload := base64.StdEncoding.EncodeToString(buf)
+				err = runCmd(h.Cmd, encPayload)
+				if err != nil {
+					log.Fatal(err)
+				}
 			}
 		})
 	}

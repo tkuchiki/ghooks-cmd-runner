@@ -15,8 +15,9 @@ type config struct {
 }
 
 type hook struct {
-	Event string `toml:"event"`
-	Cmd   string `toml:"command"`
+	Event  string `toml:"event"`
+	Cmd    string `toml:"command"`
+	Branch string `toml:"branch"`
 }
 
 type hooks struct {
