@@ -8,7 +8,13 @@ import (
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"os"
+	"sync"
 )
+
+type cmd struct {
+	command string
+	payload string
+}
 
 var (
 	defaultPort = 18889
@@ -23,7 +29,7 @@ var (
 
 func main() {
 	kingpin.CommandLine.Help = "Receives Github webhooks and runs commands"
-	kingpin.Version("0.1.3")
+	kingpin.Version("0.2.0")
 	kingpin.Parse()
 
 	tmpConf := config{
@@ -64,6 +70,10 @@ func main() {
 	}
 
 	for _, h := range conf.Hook {
+		if h.Event == "" {
+			log.Fatal("event is required.")
+		}
+
 		hooks.On(h.Event, func(payload interface{}) {
 			branch := parseBranch(payload)
 			var matched bool
@@ -73,6 +83,8 @@ func main() {
 			}
 
 			if matched {
+				m := new(sync.Mutex)
+
 				var buf []byte
 				buf, err = json.Marshal(payload)
 				if err != nil {
@@ -80,10 +92,13 @@ func main() {
 				}
 
 				encPayload := base64.StdEncoding.EncodeToString(buf)
+
+				m.Lock()
 				err = runCmd(h.Cmd, encPayload)
 				if err != nil {
 					log.Fatal(err)
 				}
+				m.Unlock()
 			}
 		})
 	}
