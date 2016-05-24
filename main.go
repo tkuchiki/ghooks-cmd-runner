@@ -9,6 +9,7 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 	"os"
 	"sync"
+	"time"
 )
 
 type cmd struct {
@@ -29,7 +30,7 @@ var (
 
 func main() {
 	kingpin.CommandLine.Help = "Receives Github webhooks and runs commands"
-	kingpin.Version("0.2.0")
+	kingpin.Version("0.2.1")
 	kingpin.Parse()
 
 	tmpConf := config{
@@ -94,10 +95,29 @@ func main() {
 				encPayload := base64.StdEncoding.EncodeToString(buf)
 
 				m.Lock()
-				err = runCmd(h.Cmd, encPayload)
-				if err != nil {
-					log.Fatal(err)
+
+				var g githubClient
+				if h.Event == "pull_request" && h.isNotBlankAccessToken() {
+					owner, repo, ref := parsePullRequestStatus(payload)
+					g = NewClient(owner, repo, ref, h.AccessToken)
+
+					g.pendingStatus()
 				}
+
+				err = runCmd(h.Cmd, encPayload)
+
+				if h.Event == "pull_request" && h.isNotBlankAccessToken() && err == nil {
+					g.successStatus()
+				}
+
+				if err != nil {
+					if h.isNotBlankAccessToken() {
+						g.failureStatus()
+					}
+					log.Error(err)
+				}
+
+				time.Sleep(1000 * time.Millisecond)
 				m.Unlock()
 			}
 		})

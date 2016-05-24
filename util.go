@@ -49,21 +49,6 @@ func createPIDFile(filename string) error {
 	return ioutil.WriteFile(filename, []byte(fmt.Sprint(os.Getpid())), 0644)
 }
 
-func parseBranch(payload interface{}) string {
-	j := payload.(map[string]interface{})
-	if _, ok := j["ref"]; !ok {
-		return ""
-	}
-
-	branches := strings.SplitN(j["ref"].(string), "/", 3)
-
-	if len(branches) == 3 {
-		return branches[2]
-	}
-
-	return ""
-}
-
 func matchBranch(branch, pattern string) (bool, error) {
 	if branch == "" {
 		return true, nil
