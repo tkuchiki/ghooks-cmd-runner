@@ -42,6 +42,8 @@ branch = "feature/*"
 [[hook]]
 event = "pull_request"
 command = "/path/to/script"
+# call Status API (See: https://developer.github.com/v3/repos/statuses/#create-a-status)
+access_token = "your access token"
 ```
 
 ### Script

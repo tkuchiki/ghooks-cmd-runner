@@ -15,9 +15,10 @@ type config struct {
 }
 
 type hook struct {
-	Event  string `toml:"event"`
-	Cmd    string `toml:"command"`
-	Branch string `toml:"branch"`
+	Event       string `toml:"event"`
+	Cmd         string `toml:"command"`
+	Branch      string `toml:"branch"`
+	AccessToken string `toml:"access_token"`
 }
 
 type hooks struct {
@@ -60,4 +61,8 @@ func loadToml(filename string, c config) (config, error) {
 	}
 
 	return config, err
+}
+
+func (h hook) isNotBlankAccessToken() bool {
+	return h.AccessToken != ""
 }
