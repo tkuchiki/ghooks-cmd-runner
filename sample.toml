@@ -12,3 +12,4 @@ branch = "feature/*"
 [[hook]]
 event = "pull_request"
 command = "/path/to/sh"
+access_token = "your access token"

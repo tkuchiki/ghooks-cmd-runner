@@ -42,6 +42,7 @@ branch = "feature/*"
 [[hook]]
 event = "pull_request"
 command = "/path/to/script"
+access_token = "your access token"
 ```
 
 ### Script
