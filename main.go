@@ -115,6 +115,8 @@ func main() {
 						g.failureStatus()
 					}
 					log.Error(err)
+					m.Unlock()
+					return
 				}
 
 				time.Sleep(1000 * time.Millisecond)
