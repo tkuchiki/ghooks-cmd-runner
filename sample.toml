@@ -14,3 +14,5 @@ event = "pull_request"
 command = "/path/to/sh"
 # call Status API (See: https://developer.github.com/v3/repos/statuses/#create-a-status)
 access_token = "your access token"
+include_actions = [ "opened", "reopened" ]
+# exclude_actions = [ "closed", "unlabeled" ]

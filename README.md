@@ -44,6 +44,8 @@ event = "pull_request"
 command = "/path/to/script"
 # call Status API (See: https://developer.github.com/v3/repos/statuses/#create-a-status)
 access_token = "your access token"
+include_actions = [ "opened", "reopened" ]
+# exclude_actions = [ "closed", "unlabeled" ]
 ```
 
 ### Script
@@ -51,6 +53,12 @@ access_token = "your access token"
 ```shell
 # output github webhook payload
 echo ${GITHUB_WEBHOOK_PAYLOAD} | base64 -d | jq .
+```
+
+```shell
+# change the target_url
+echo http://example.com > ${SUCCESS_TARGET_FILE}
+echo http://example.com > ${FAILURE_TARGET_FILE}
 ```
 
 ## Example
