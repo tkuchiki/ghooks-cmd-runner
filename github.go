@@ -44,14 +44,26 @@ func (g githubClient) pendingStatus() error {
 	return createStatus(g.client, g.owner, g.repo, g.ref, status)
 }
 
-func (g githubClient) successStatus() error {
-	status := NewRepoStatus("success", targetURL(g), "The build succeeded!")
+func (g githubClient) successStatus(target string) error {
+	if target == "" {
+		target = targetURL(g)
+	}
+
+	log.Info(target)
+
+	status := NewRepoStatus("success", target, "The build succeeded!")
 
 	return createStatus(g.client, g.owner, g.repo, g.ref, status)
 }
 
-func (g githubClient) failureStatus() error {
-	status := NewRepoStatus("failure", targetURL(g), "The build failed!")
+func (g githubClient) failureStatus(target string) error {
+	if target == "" {
+		target = targetURL(g)
+	}
+
+	log.Info(target)
+
+	status := NewRepoStatus("failure", target, "The build failed!")
 
 	return createStatus(g.client, g.owner, g.repo, g.ref, status)
 }
@@ -62,6 +74,34 @@ func NewRepoStatus(state, target, description string) *github.RepoStatus {
 		TargetURL:   &target,
 		Description: &description,
 	}
+}
+
+func includeActions(action string, includes []string) bool {
+	if len(includes) == 0 {
+		return true
+	}
+
+	for _, i := range includes {
+		if action == i {
+			return true
+		}
+	}
+
+	return false
+}
+
+func excludeActions(action string, excludes []string) bool {
+	if len(excludes) == 0 {
+		return false
+	}
+
+	for _, e := range excludes {
+		if action == e {
+			return true
+		}
+	}
+
+	return false
 }
 
 func parseBranch(payload interface{}) string {
@@ -77,6 +117,15 @@ func parseBranch(payload interface{}) string {
 	}
 
 	return branches[2]
+}
+
+func parseAction(payload interface{}) string {
+	j := payload.(map[string]interface{})
+	if _, ok := j["action"]; !ok {
+		return ""
+	}
+
+	return j["action"].(string)
 }
 
 func parsePullRequestStatus(payload interface{}) (string, string, string) {

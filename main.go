@@ -30,7 +30,7 @@ var (
 
 func main() {
 	kingpin.CommandLine.Help = "Receives Github webhooks and runs commands"
-	kingpin.Version("0.2.1")
+	kingpin.Version("0.2.2")
 	kingpin.Parse()
 
 	tmpConf := config{
@@ -76,6 +76,18 @@ func main() {
 		}
 
 		hooks.On(h.Event, func(payload interface{}) {
+			action := parseAction(payload)
+
+			if !includeActions(action, h.IncludeActions) {
+				log.Info(fmt.Sprintf("skipped action = %s (%s)", action, h.Event))
+				return
+			}
+
+			if excludeActions(action, h.ExcludeActions) {
+				log.Info(fmt.Sprintf("skipped action = %s (%s)", action, h.Event))
+				return
+			}
+
 			branch := parseBranch(payload)
 			var matched bool
 			matched, err = matchBranch(branch, h.Branch)
@@ -104,15 +116,48 @@ func main() {
 					g.pendingStatus()
 				}
 
+				var successF, failureF *os.File
+				var successDir, failureDir string
+				if h.Event == "pull_request" && h.isNotBlankAccessToken() {
+					successF, successDir, err = createTempFile()
+					if err != nil {
+						log.Error(err)
+						m.Unlock()
+						removeDirs(successDir)
+						return
+					}
+					os.Setenv("SUCCESS_TARGET_FILE", successF.Name())
+
+					failureF, failureDir, err = createTempFile()
+					if err != nil {
+						log.Error(err)
+						m.Unlock()
+						removeDirs(successDir, failureDir)
+						return
+					}
+					os.Setenv("FAILURE_TARGET_FILE", failureF.Name())
+				}
+
 				err = runCmd(h.Cmd, encPayload)
 
 				if h.Event == "pull_request" && h.isNotBlankAccessToken() && err == nil {
-					g.successStatus()
+					err = g.successStatus(readlineTempFile(successF))
+					removeDirs(successDir, failureDir)
+					if err != nil {
+						log.Error(err)
+						m.Unlock()
+						removeDirs(successDir, failureDir)
+						return
+					}
 				}
 
 				if err != nil {
 					if h.isNotBlankAccessToken() {
-						g.failureStatus()
+						err = g.failureStatus(readlineTempFile(failureF))
+						removeDirs(successDir, failureDir)
+						if err != nil {
+							log.Error(err)
+						}
 					}
 					log.Error(err)
 					m.Unlock()

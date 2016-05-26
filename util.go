@@ -61,3 +61,27 @@ func matchBranch(branch, pattern string) (bool, error) {
 
 	return re.Match([]byte(branch)), nil
 }
+
+func createTempFile() (*os.File, string, error) {
+	var f *os.File
+	dir, err := ioutil.TempDir("", "")
+	if err != nil {
+		return f, "", err
+	}
+
+	f, err = ioutil.TempFile(dir, "ghooks-cmd-runner")
+
+	return f, dir, err
+}
+
+func readlineTempFile(f *os.File) string {
+	scanner := bufio.NewScanner(f)
+	_ = scanner.Scan()
+	return scanner.Text()
+}
+
+func removeDirs(files ...string) {
+	for _, f := range files {
+		os.RemoveAll(f)
+	}
+}
