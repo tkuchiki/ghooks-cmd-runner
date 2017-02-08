@@ -3,28 +3,92 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"regexp"
+	"runtime"
 	"strings"
+	"sync"
+	"syscall"
+)
+
+var (
+	stdouterrCh = make(chan string)
+	quitCh      = make(chan struct{})
 )
 
 func runCmd(command, payload string) error {
-	var out []byte
-	var err error
+	var cmd *exec.Cmd
 
 	os.Setenv("GITHUB_WEBHOOK_PAYLOAD", payload)
-	cmds := strings.Fields(command)
-	if len(cmds) > 1 {
-		out, err = exec.Command(cmds[0], cmds[1:]...).CombinedOutput()
+	if runtime.GOOS == "windows" {
+		cmd = exec.Command("cmd", "/c", command)
 	} else {
-		out, err = exec.Command(cmds[0]).CombinedOutput()
+		cmd = exec.Command("sh", "-c", command)
 	}
 
-	if len(out) > 0 {
-		outputLines(out)
+	stdin, stdinErr := cmd.StdinPipe()
+	if stdinErr != nil {
+		return stdinErr
 	}
+
+	stdout, stdoutErr := cmd.StdoutPipe()
+	if stdoutErr != nil {
+		return stdoutErr
+	}
+
+	stderr, stderrErr := cmd.StderrPipe()
+	if stderrErr != nil {
+		return stderrErr
+	}
+
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(3)
+
+	go func() {
+		_, werr := io.WriteString(stdin, payload)
+		if perr, ok := werr.(*os.PathError); ok && perr.Err == syscall.EPIPE {
+			// ignore EPIPE
+		} else if werr != nil {
+			log.Println(werr)
+		}
+		stdin.Close()
+		wg.Done()
+	}()
+
+	go func() {
+		readIo(stdout, stdouterrCh)
+		stdout.Close()
+		wg.Done()
+	}()
+
+	go func() {
+		readIo(stderr, stdouterrCh)
+		stderr.Close()
+		wg.Done()
+	}()
+
+	go func() {
+		for {
+			select {
+			case txt := <-stdouterrCh:
+				log.Println(txt)
+			case <-quitCh:
+				break
+			}
+		}
+	}()
+
+	wg.Wait()
+
+	err := cmd.Wait()
+	quitCh <- struct{}{}
 
 	if err != nil {
 		log.Println(err)
@@ -83,5 +147,13 @@ func readlineTempFile(f *os.File) string {
 func removeDirs(files ...string) {
 	for _, f := range files {
 		os.RemoveAll(f)
+	}
+}
+
+func readIo(r io.Reader, q chan string) {
+	scanner := bufio.NewScanner(r)
+
+	for scanner.Scan() {
+		q <- scanner.Text()
 	}
 }

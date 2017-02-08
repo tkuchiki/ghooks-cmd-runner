@@ -30,7 +30,7 @@ var (
 
 func main() {
 	kingpin.CommandLine.Help = "Receives Github webhooks and runs commands"
-	kingpin.Version("0.2.2")
+	kingpin.Version("0.3.0")
 	kingpin.Parse()
 
 	tmpConf := config{
@@ -104,8 +104,6 @@ func main() {
 					log.Fatal(err)
 				}
 
-				encPayload := base64.StdEncoding.EncodeToString(buf)
-
 				m.Lock()
 
 				var g githubClient
@@ -138,7 +136,8 @@ func main() {
 					os.Setenv("FAILURE_TARGET_FILE", failureF.Name())
 				}
 
-				err = runCmd(h.Cmd, encPayload)
+				p := base64.StdEncoding.EncodeToString(buf)
+				err = runCmd(h.Cmd, p)
 
 				if h.Event == "pull_request" && h.isNotBlankAccessToken() && err == nil {
 					err = g.successStatus(readlineTempFile(successF))
