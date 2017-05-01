@@ -5,6 +5,7 @@ import (
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
 	"strings"
+	"context"
 )
 
 type githubClient struct {
@@ -29,7 +30,8 @@ func NewClient(owner, repo, ref, token string) githubClient {
 }
 
 func createStatus(client *github.Client, owner, repo, ref string, status *github.RepoStatus) error {
-	_, _, err := client.Repositories.CreateStatus(owner, repo, ref, status)
+	ctx := context.Background()
+	_, _, err := client.Repositories.CreateStatus(ctx, owner, repo, ref, status)
 
 	return err
 }
