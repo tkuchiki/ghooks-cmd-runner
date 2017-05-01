@@ -2,4 +2,5 @@
 src/
 pkg/
 tmp/
+vendor
 ghooks-cmd-runner
