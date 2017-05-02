@@ -74,7 +74,7 @@ func main() {
 		if h.Event == "" {
 			log.Fatal("event is required.")
 		}
-
+		hookingBranch := h.Branch
 		hooks.On(h.Event, func(payload interface{}) {
 			action := parseAction(payload)
 
@@ -90,7 +90,7 @@ func main() {
 
 			branch := parseBranch(payload)
 			var matched bool
-			matched, err = matchBranch(branch, h.Branch)
+			matched, err = matchBranch(branch, hookingBranch)
 			if err != nil {
 				log.Fatal(err)
 			}
