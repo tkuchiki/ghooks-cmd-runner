@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/BurntSushi/toml"
 	"io/ioutil"
+
+	"github.com/BurntSushi/toml"
 )
 
 type config struct {
@@ -12,15 +13,6 @@ type config struct {
 	Logfile string `toml:"logfile"`
 	Pidfile string `toml:"pidfile"`
 	Hook    []hook
-}
-
-type hook struct {
-	Event          string   `toml:"event"`
-	Cmd            string   `toml:"command"`
-	Branch         string   `toml:"branch"`
-	IncludeActions []string `toml:"include_actions"`
-	ExcludeActions []string `toml:"exclude_actions"`
-	AccessToken    string   `toml:"access_token"`
 }
 
 type hooks struct {
