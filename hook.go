@@ -46,12 +46,6 @@ func (h hook) callback(payload interface{}) {
 	if matched {
 		m := new(sync.Mutex)
 
-		var buf []byte
-		buf, err = json.Marshal(payload)
-		if err != nil {
-			log.Fatal(err)
-		}
-
 		m.Lock()
 
 		var g githubClient
@@ -84,15 +78,19 @@ func (h hook) callback(payload interface{}) {
 			os.Setenv("FAILURE_TARGET_FILE", failureF.Name())
 		}
 
-		var p []byte
-		if h.isEncoded {
-			p = make([]byte, base64.StdEncoding.EncodedLen(len(buf)))
-			base64.StdEncoding.Encode(p, buf)
-		} else {
-			p = buf
+		var buf []byte
+		buf, err = json.Marshal(payload)
+		if err != nil {
+			log.Fatal(err)
 		}
 
-		err = runCmd(h.Cmd, p)
+		if h.isEncoded {
+			encodedBuf := make([]byte, base64.StdEncoding.EncodedLen(len(buf)))
+			base64.StdEncoding.Encode(encodedBuf, buf)
+			buf = encodedBuf
+		}
+
+		err = runCmd(h.Cmd, buf)
 
 		if h.Event == "pull_request" && h.isNotBlankAccessToken() && err == nil {
 			err = g.successStatus(readlineTempFile(successF))
