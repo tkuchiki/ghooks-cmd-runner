@@ -22,6 +22,7 @@ Flags:
       --host="127.0.0.1"  listen host
   -l, --logfile=LOGFILE   log file location
       --pidfile=PIDFILE   pid file location
+      --raw-payload       raw payload
       --version           Show application version.
 ```
 
