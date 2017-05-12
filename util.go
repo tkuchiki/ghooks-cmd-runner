@@ -2,6 +2,8 @@ package main
 
 import (
 	"bufio"
+	"bytes"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -10,7 +12,6 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
-	"sync"
 	"syscall"
 )
 
@@ -19,9 +20,11 @@ var (
 	quitCh      = make(chan struct{})
 )
 
-func runCmd(command, payload string) error {
+func runCmd(command string, buf []byte) error {
 	var cmd *exec.Cmd
 
+	payload := base64.StdEncoding.EncodeToString(buf)
+	b := bytes.NewBuffer(buf)
 	os.Setenv("GITHUB_WEBHOOK_PAYLOAD", payload)
 	if runtime.GOOS == "windows" {
 		cmd = exec.Command("cmd", "/c", command)
@@ -29,72 +32,40 @@ func runCmd(command, payload string) error {
 		cmd = exec.Command("sh", "-c", command)
 	}
 
-	stdin, stdinErr := cmd.StdinPipe()
-	if stdinErr != nil {
-		return stdinErr
-	}
-
-	stdout, stdoutErr := cmd.StdoutPipe()
-	if stdoutErr != nil {
-		return stdoutErr
-	}
-
-	stderr, stderrErr := cmd.StderrPipe()
-	if stderrErr != nil {
-		return stderrErr
-	}
-
-	if err := cmd.Start(); err != nil {
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
 		return err
 	}
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+	defer stdout.Close()
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return err
+	}
+	defer stderr.Close()
 
-	var wg sync.WaitGroup
-	wg.Add(3)
+	go readIo(stdout)
+	go readIo(stderr)
 
 	go func() {
-		_, werr := io.WriteString(stdin, payload)
+		defer stdin.Close()
+		_, werr := b.WriteTo(stdin)
 		if perr, ok := werr.(*os.PathError); ok && perr.Err == syscall.EPIPE {
 			// ignore EPIPE
 		} else if werr != nil {
 			log.Println(werr)
 		}
-		stdin.Close()
-		wg.Done()
 	}()
 
-	go func() {
-		readIo(stdout, stdouterrCh)
-		stdout.Close()
-		wg.Done()
-	}()
-
-	go func() {
-		readIo(stderr, stdouterrCh)
-		stderr.Close()
-		wg.Done()
-	}()
-
-	go func() {
-		for {
-			select {
-			case txt := <-stdouterrCh:
-				log.Println(txt)
-			case <-quitCh:
-				break
-			}
-		}
-	}()
-
-	wg.Wait()
-
-	err := cmd.Wait()
-	quitCh <- struct{}{}
-
+	err = cmd.Run()
 	if err != nil {
-		log.Println(err)
+		return err
 	}
 
-	return err
+	return nil
 }
 
 func outputLines(data []byte) {
@@ -150,10 +121,10 @@ func removeDirs(files ...string) {
 	}
 }
 
-func readIo(r io.Reader, q chan string) {
+func readIo(r io.Reader) {
 	scanner := bufio.NewScanner(r)
 
 	for scanner.Scan() {
-		q <- scanner.Text()
+		log.Info(scanner.Text())
 	}
 }
