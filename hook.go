@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -15,6 +16,11 @@ type hook struct {
 	IncludeActions []string `toml:"include_actions"`
 	ExcludeActions []string `toml:"exclude_actions"`
 	AccessToken    string   `toml:"access_token"`
+	isEncoded      bool
+}
+
+func (h hook) setIsEncoded(b bool) {
+	h.isEncoded = b
 }
 
 func (h hook) callback(payload interface{}) {
@@ -39,12 +45,6 @@ func (h hook) callback(payload interface{}) {
 
 	if matched {
 		m := new(sync.Mutex)
-
-		var buf []byte
-		buf, err = json.Marshal(payload)
-		if err != nil {
-			log.Fatal(err)
-		}
 
 		m.Lock()
 
@@ -76,6 +76,18 @@ func (h hook) callback(payload interface{}) {
 				return
 			}
 			os.Setenv("FAILURE_TARGET_FILE", failureF.Name())
+		}
+
+		var buf []byte
+		buf, err = json.Marshal(payload)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if h.isEncoded {
+			encodedBuf := make([]byte, base64.StdEncoding.EncodedLen(len(buf)))
+			base64.StdEncoding.Encode(encodedBuf, buf)
+			buf = encodedBuf
 		}
 
 		err = runCmd(h.Cmd, buf)

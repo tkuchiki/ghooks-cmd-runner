@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"encoding/base64"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -20,12 +19,11 @@ var (
 	quitCh      = make(chan struct{})
 )
 
-func runCmd(command string, buf []byte) error {
+func runCmd(command string, payload []byte) error {
 	var cmd *exec.Cmd
 
-	payload := base64.StdEncoding.EncodeToString(buf)
-	b := bytes.NewBuffer(buf)
-	os.Setenv("GITHUB_WEBHOOK_PAYLOAD", payload)
+	b := bytes.NewBuffer(payload)
+	os.Setenv("GITHUB_WEBHOOK_PAYLOAD", string(payload))
 	if runtime.GOOS == "windows" {
 		cmd = exec.Command("cmd", "/c", command)
 	} else {
