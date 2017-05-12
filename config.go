@@ -19,11 +19,11 @@ type hooks struct {
 	Hook []hook
 }
 
-func loadFile(filename string) (string, error) {
+func loadFile(filename string) ([]byte, error) {
 	var err error
 	buf, err := ioutil.ReadFile(filename)
 
-	return string(buf), err
+	return buf, err
 }
 
 func loadToml(filename string, c config) (config, error) {

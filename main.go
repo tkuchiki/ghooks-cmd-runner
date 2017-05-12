@@ -22,6 +22,7 @@ var (
 	host        = kingpin.Flag("host", "listen host").Default(defaultHost).String()
 	logfile     = kingpin.Flag("logfile", "log file location").Short('l').String()
 	pidfile     = kingpin.Flag("pidfile", "pid file location").String()
+	isEncoded   = kingpin.Flag("no-base64", "use raw payload").Default("false").Bool()
 	log         = logrus.New()
 )
 
@@ -71,6 +72,7 @@ func main() {
 		if h.Event == "" {
 			log.Fatal("event is required.")
 		}
+		h.setIsEncoded(!*isEncoded)
 		hooks.On(h.Event, h.callback)
 	}
 

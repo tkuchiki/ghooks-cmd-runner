@@ -20,12 +20,19 @@ var (
 	quitCh      = make(chan struct{})
 )
 
-func runCmd(command string, buf []byte) error {
+func runCmd(command string, buf []byte, isEncoded bool) error {
 	var cmd *exec.Cmd
 
-	payload := base64.StdEncoding.EncodeToString(buf)
-	b := bytes.NewBuffer(buf)
-	os.Setenv("GITHUB_WEBHOOK_PAYLOAD", payload)
+	var payload []byte
+	if isEncoded {
+		payload = make([]byte, base64.StdEncoding.EncodedLen(len(buf)))
+		base64.StdEncoding.Encode(payload, buf)
+	} else {
+		payload = buf
+	}
+
+	b := bytes.NewBuffer(payload)
+	os.Setenv("GITHUB_WEBHOOK_PAYLOAD", string(payload))
 	if runtime.GOOS == "windows" {
 		cmd = exec.Command("cmd", "/c", command)
 	} else {

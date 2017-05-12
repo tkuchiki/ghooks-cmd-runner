@@ -15,6 +15,11 @@ type hook struct {
 	IncludeActions []string `toml:"include_actions"`
 	ExcludeActions []string `toml:"exclude_actions"`
 	AccessToken    string   `toml:"access_token"`
+	isEncoded      bool
+}
+
+func (h hook) setIsEncoded(b bool) {
+	h.isEncoded = b
 }
 
 func (h hook) callback(payload interface{}) {
@@ -78,7 +83,7 @@ func (h hook) callback(payload interface{}) {
 			os.Setenv("FAILURE_TARGET_FILE", failureF.Name())
 		}
 
-		err = runCmd(h.Cmd, buf)
+		err = runCmd(h.Cmd, buf, h.isEncoded)
 
 		if h.Event == "pull_request" && h.isNotBlankAccessToken() && err == nil {
 			err = g.successStatus(readlineTempFile(successF))
