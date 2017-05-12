@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -83,7 +84,15 @@ func (h hook) callback(payload interface{}) {
 			os.Setenv("FAILURE_TARGET_FILE", failureF.Name())
 		}
 
-		err = runCmd(h.Cmd, buf, h.isEncoded)
+		var p []byte
+		if h.isEncoded {
+			p = make([]byte, base64.StdEncoding.EncodedLen(len(buf)))
+			base64.StdEncoding.Encode(p, buf)
+		} else {
+			p = buf
+		}
+
+		err = runCmd(h.Cmd, p)
 
 		if h.Event == "pull_request" && h.isNotBlankAccessToken() && err == nil {
 			err = g.successStatus(readlineTempFile(successF))
