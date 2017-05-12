@@ -22,7 +22,7 @@ var (
 	host         = kingpin.Flag("host", "listen host").Default(defaultHost).String()
 	logfile      = kingpin.Flag("logfile", "log file location").Short('l').String()
 	pidfile      = kingpin.Flag("pidfile", "pid file location").String()
-	isNotEncoded = kingpin.Flag("no-base64", "use raw payload").Default("false").Bool()
+	isNotEncoded = kingpin.Flag("raw-payload", "raw payload").Default("false").Bool()
 	log          = logrus.New()
 )
 
