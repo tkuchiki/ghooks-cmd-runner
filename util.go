@@ -47,8 +47,8 @@ func runCmd(command string, buf []byte) error {
 	}
 	defer stderr.Close()
 
-	r := io.MultiReader(stdout, stderr)
-	go readIo(r)
+	go readIo(stdout)
+	go readIo(stderr)
 
 	go func() {
 		defer stdin.Close()
