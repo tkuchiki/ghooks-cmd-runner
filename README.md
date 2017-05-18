@@ -52,10 +52,7 @@ include_actions = [ "opened", "reopened" ]
 ### Script
 
 ```shell
-# output github webhook payload
-echo ${GITHUB_WEBHOOK_PAYLOAD} | base64 -d | jq .
-
-# or (read from stdin)
+# read from stdin
 cat - | base64 -d | jq .
 ```
 
