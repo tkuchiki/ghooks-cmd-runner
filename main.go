@@ -28,7 +28,7 @@ var (
 
 func main() {
 	kingpin.CommandLine.Help = "Receives Github webhooks and runs commands"
-	kingpin.Version("0.3.3")
+	kingpin.Version("0.4.0")
 	kingpin.Parse()
 
 	tmpConf := config{
