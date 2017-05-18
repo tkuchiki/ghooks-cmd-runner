@@ -22,8 +22,6 @@ var (
 func runCmd(command string, payload []byte) error {
 	var cmd *exec.Cmd
 
-	b := bytes.NewBuffer(payload)
-	os.Setenv("GITHUB_WEBHOOK_PAYLOAD", string(payload))
 	if runtime.GOOS == "windows" {
 		cmd = exec.Command("cmd", "/c", command)
 	} else {
@@ -50,6 +48,7 @@ func runCmd(command string, payload []byte) error {
 
 	go func() {
 		defer stdin.Close()
+		b := bytes.NewBuffer(payload)
 		_, werr := b.WriteTo(stdin)
 		if perr, ok := werr.(*os.PathError); ok && perr.Err == syscall.EPIPE {
 			// ignore EPIPE
