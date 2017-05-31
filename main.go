@@ -74,7 +74,8 @@ func main() {
 		if h.Event == "" {
 			log.Fatal("event is required.")
 		}
-		h.setIsEncoded(isEncoded)
+
+		h.isEncoded = isEncoded
 		hooks.On(h.Event, h.callback)
 	}
 

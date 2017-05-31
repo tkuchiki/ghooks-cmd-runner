@@ -19,10 +19,6 @@ type hook struct {
 	isEncoded      bool
 }
 
-func (h hook) setIsEncoded(b bool) {
-	h.isEncoded = b
-}
-
 func (h hook) callback(payload interface{}) {
 	action := parseAction(payload)
 
