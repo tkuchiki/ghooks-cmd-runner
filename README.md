@@ -49,7 +49,7 @@ include_actions = [ "opened", "reopened" ]
 # exclude_actions = [ "closed", "unlabeled" ]
 ```
 
-If you don't want put secret in Config, alternatively you can store secret in .env file as follows:
+If you don't want to put secret in Config, alternatively you can store secret in .env file as follows:
 
 ```shell
 SECRET_TOKEN=your webhook secret
