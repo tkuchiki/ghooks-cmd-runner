@@ -6,8 +6,8 @@ import (
 
 	"github.com/Konboi/ghooks"
 	"github.com/Sirupsen/logrus"
-	"gopkg.in/alecthomas/kingpin.v2"
 	_ "github.com/joho/godotenv/autoload"
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 type cmd struct {
@@ -29,7 +29,7 @@ var (
 
 func main() {
 	kingpin.CommandLine.Help = "Receives Github webhooks and runs commands"
-	kingpin.Version("0.4.1")
+	kingpin.Version("0.4.2")
 	kingpin.Parse()
 
 	tmpConf := config{
