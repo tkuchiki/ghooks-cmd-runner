@@ -7,6 +7,7 @@ import (
 	"github.com/Konboi/ghooks"
 	"github.com/Sirupsen/logrus"
 	"gopkg.in/alecthomas/kingpin.v2"
+	_ "github.com/joho/godotenv/autoload"
 )
 
 type cmd struct {
@@ -57,7 +58,9 @@ func main() {
 
 	hooks := ghooks.NewServer(conf.Port, conf.Host)
 
-	if conf.Secret != "" {
+	if envSecret := os.Getenv("SECRET_TOKEN"); envSecret != "" {
+		hooks.Secret = envSecret
+	} else if conf.Secret != "" {
 		hooks.Secret = conf.Secret
 	}
 
