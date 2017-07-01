@@ -17,3 +17,5 @@ import:
   - unix
 - package: gopkg.in/alecthomas/kingpin.v2
 - package: gopkg.in/gemnasium/logrus-airbrake-hook.v2
+- package: github.com/joho/godotenv
+  version: ^1.1.0
