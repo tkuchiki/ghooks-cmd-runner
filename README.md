@@ -39,6 +39,7 @@ Flags:
 event = "push"
 command = "/path/to/script"
 branch = "feature/*"
+# exclude_actions = ["deleted", "created"]
 
 [[hook]]
 event = "pull_request"
