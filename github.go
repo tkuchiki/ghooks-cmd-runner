@@ -121,13 +121,31 @@ func parseBranch(payload interface{}) string {
 	return branches[2]
 }
 
+// Note: https://developer.github.com/v3/activity/events/types/
+// Include action field: return action field
+// Not Incluade action field: return parse created, deleted, and forced field when push
 func parseAction(payload interface{}) string {
 	j := payload.(map[string]interface{})
-	if _, ok := j["action"]; !ok {
-		return ""
+
+	// include action field
+	if _, ok := j["action"]; ok {
+		return j["action"].(string)
 	}
 
-	return j["action"].(string)
+	// not include action field
+	if created, ok := j["created"]; ok && created.(bool) {
+		return "created"
+	}
+
+	if deleted, ok := j["deleted"]; ok && deleted.(bool) {
+		return "deleted"
+	}
+
+	if forced, ok := j["forced"]; ok && forced.(bool) {
+		return "forced"
+	}
+
+	return ""
 }
 
 func parsePullRequestStatus(payload interface{}) (string, string, string) {
