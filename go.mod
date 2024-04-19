@@ -17,8 +17,8 @@ require (
 	github.com/golang/protobuf v0.0.0-20170427213220-18c9bb326172 // indirect
 	github.com/google/go-querystring v0.0.0-20170111101155-53e6ce116135 // indirect
 	github.com/stretchr/testify v1.8.1 // indirect
-	golang.org/x/net v0.17.0 // indirect
+	golang.org/x/net v0.23.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.13.0 // indirect
+	golang.org/x/sys v0.18.0 // indirect
 	google.golang.org/appengine v0.0.0-20170410194355-170382fa85b1 // indirect
 )
